@@ -15,12 +15,12 @@ from selenuim.base_page import BasePage
 def save_html(name: str, url: str):
     """Launch the WebDriver, save the page source as an HTML file with a timestamped filename."""
     options = Options()
+    # options.add_argument("--proxy-server=http://127.0.0.1:8081") # TODO: hook a json directly? consider run  mitmdump -s proxy.py --set listen_port=8081
     driver = webdriver.Chrome(options=options)
     try:
         page = BasePage(driver)
-        page.open(
-            "https://www.yad2.co.il/realestate/rent?multiCity=6900%2C9700%2C6400&propertyGroup=apartments&property=1&squaremeter=60-160&text=%D7%92%D7%92&zoom=13")
-        time.sleep(25)  # Wait for the page to load completely
+        page.open(url)
+        time.sleep(10)  # Wait for the page to load completely
 
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"{name}_{timestamp}.html"
@@ -73,17 +73,26 @@ def parse_html(name: str):
             print("-" * 30)
 
 
-
-if __name__ == "__main__":
-    # Example usage:
-    name = "rent_listings"
-
-    # Step 1: Save HTML
-    url = "https://www.yad2.co.il/realestate/rent?multiCity=6900%2C9700%2C6400&propertyGroup=apartments&property=1&squaremeter=60-160&text=%D7%92%D7%92&zoom=13"
-    save_html(name, url)
-
-    # Step 2: Parse the latest HTML for the given name
+def parse_and_save(name: str, url: str, fetch=True):
+    if fetch:
+        save_html(name, url)
+    print (f"RESULTS FOR {name}")
     parse_html(name)
 
-    # TODO: save html to htmls; save json parse result to jsons; append console to logs;
+if __name__ == "__main__":
+
+    searches = [
+        {
+            "name": "Regular_apartments",
+            "url": "https://www.yad2.co.il/realestate/rent?multiCity=8700%2C6400%2C6900%2C9700&propertyGroup=apartments&property=1&rooms=2-3.5&price=3500-6000&balcony=1"
+        },
+        {
+            "name" : "Penthouses",
+            "url": "https://www.yad2.co.il/realestate/rent?multiCity=6900%2C9700%2C6400&propertyGroup=apartments&property=1&squaremeter=60-160&text=%D7%92%D7%92"
+        }
+    ]
+
+    for search in searches:
+        # print(f"{search['name'].lower()} , {search['url']}")
+        parse_and_save(name=search['name'].lower(), url=search['url'], fetch=False)
 
