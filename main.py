@@ -85,3 +85,8 @@ if __name__ == "__main__":
        map: List[Apartment] = fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True, parse=True)
        # for idx, apt in enumerate(map):
        #    dloader.download_all_images(apt)
+
+    #TODO: function that dumps unneeded IDs from Supa (probably a request: deactivated: true)
+    #TODO: function that before a search, gets hot IDs from Supa and voids them if search brings none?
+    #  ^ is the above a one request? id + boolean dumped?
+    #TODO: function that updates Supa
