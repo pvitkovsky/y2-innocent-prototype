@@ -11,6 +11,7 @@ from selenium.webdriver.chrome.options import Options
 
 from src.apartament_img import ApartamentImageDownloader
 from src.selenuim.base_page import BasePage
+from src.supa_client import SupaClient, SupaState
 from src.y2_ingest_svc import Y2IngestService, Apartment
 
 
@@ -70,23 +71,60 @@ def fetch_and_parse(name: str, url: str, fetch=True, parse=True):
         return res
 
 
+def remove_archived(apartaments: List[Apartment], state: List[SupaState]):
+    archivedDict = {apt.id for apt in state if apt.archived}
+    return [apt for apt in apartaments if apt['token'] not in archivedDict]
+
+
+def check_missing(apartaments: List[Apartment], state: List[SupaState]):
+    activeDict = {apt['token'] for apt in apartaments}
+    return [apt.id for apt in state if apt.id not in activeDict]
+
+def printIds(apartaments: List[Apartment]):
+    print(f"Total {len(apartaments)} objects")
+    [print(f"{apt['token']}") for apt in apartaments]
+
+
 if __name__ == "__main__":
 
+    client = SupaClient(
+        supabase_url='https://kbbcllgitrzhwbyfgevc.supabase.co/rest/v1/apartaments_ii',
+        supabase_key='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiYmNsbGdpdHJ6aHdieWZnZXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Nzg1NzksImV4cCI6MjA1ODU1NDU3OX0.acHkhagTOFGU88812SKyZe39nG4SM_9MpSmEIBMIH6w'
+    )
+    state = client.get_state("dev_query");
+
     searches = [
-        { 
+        {
           "name": "Map", # print name
           "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=4000&maxPrice=5000&minRooms=2&maxRooms=3&property=1&balcony=1&multiCity=8700,6400,6900,9700"
         }
         # TODO: more searches;
     ]
 
-    dloader = ApartamentImageDownloader()
+    #
     for search in searches:
-       map: List[Apartment] = fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True, parse=True)
-       # for idx, apt in enumerate(map):
-       #    dloader.download_all_images(apt)
+        apartaments: List[Apartment] = fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=False, parse=False)
+        filtered = remove_archived(apartaments, state)
+        printIds(filtered)
+
+        missing = check_missing(apartaments, state)
+        print(missing)
+
+    # dloader = ApartamentImageDownloader()
+    # for search in searches:
+    #    map: List[Apartment] = fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True, parse=True)
+    #    # for idx, apt in enumerate(map):
+    #    #    dloader.download_all_images(apt)
+
+
+
+
+    # client.deactivate_id("xqq864cf")
+    # state = client.get_state("dev_query");
+    # print(state)
 
     #TODO: function that dumps unneeded IDs from Supa (probably a request: deactivated: true)
     #TODO: function that before a search, gets hot IDs from Supa and voids them if search brings none?
     #  ^ is the above a one request? id + boolean dumped?
     #TODO: function that updates Supa
+
