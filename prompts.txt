@@ -1,0 +1,21 @@
+
+
+Thanks! Next level is getting/posting from Python.
+Please write a class SupaClient that has init() with the required URL and token; and methods include a GET getState(q_name) that runs this:
+curl --get 'url?select=id,archived' -H 'apikey: {token}' -H 'Authorization: Bearer {token}' -d "query_name=eq.{q_name}"
+as well, we need a POST(id):
+curl -X PATCH '{url}?id=eq.{id}' \
+-H "apikey: "{token}" \
+-H "Authorization: Bearer {token}" \
+-H "Content-Type: application/json" \
+-H "Prefer: return=minimal" \
+-d '{ "archived": "TRUE" }'
+
+curl -X POST 'https://kbbcllgitrzhwbyfgevc.supabase.co/rest/v1/apartaments_ii' \
+-H "apikey: SUPABASE_CLIENT_ANON_KEY" \
+-H "Authorization: Bearer SUPABASE_CLIENT_ANON_KEY" \
+-H "Content-Type: application/json" \
+-d '[{ "some_column": "someValue" }, { "other_column": "otherValue" }]'
+
+
+// next: count, print query map name, archive button; print coordinates;

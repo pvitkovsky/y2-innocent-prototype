@@ -1,7 +1,11 @@
 import json
 from dataclasses import dataclass
+from typing import List
 
 import requests
+
+from src.y2_ingest_svc import Apartment
+
 
 @dataclass
 class SupaState():
@@ -42,4 +46,14 @@ class SupaClient:
             print(f"Error during PATCH request: {e}")
             return False
 
-    # TODO: post;
+    def ingest_values(self, apartaments: List[Apartment]):
+        api_url = f"{self.url}"
+        payload = [{'id': apt['token'], 'data': json.dumps(apt)} for apt in apartaments]
+        upsert_headers = {**self.headers, **{"Prefer" : "resolution=merge-duplicates"}}
+        try:
+            response = requests.post(api_url, headers=upsert_headers, json=payload)
+            response.raise_for_status()  # Raise HTTPError for bad responses
+            return True
+        except requests.exceptions.RequestException as e:
+            print(f"Error during PATCH request: {e}")
+            return False

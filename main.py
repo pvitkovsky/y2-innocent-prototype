@@ -110,6 +110,8 @@ if __name__ == "__main__":
         missing = check_missing(apartaments, state)
         print(missing)
 
+        client.ingest_values(filtered)
+
     # dloader = ApartamentImageDownloader()
     # for search in searches:
     #    map: List[Apartment] = fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True, parse=True)
