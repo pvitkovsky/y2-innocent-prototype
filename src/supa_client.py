@@ -51,7 +51,7 @@ class SupaClient:
         payload = [{'id': apt['token'], 'data': json.dumps(apt)} for apt in apartaments]
         upsert_headers = {**self.headers, **{"Prefer" : "resolution=merge-duplicates"}}
         try:
-            response = requests.post(api_url, headers=upsert_headers, json=payload)
+            response = requests.post(api_url, headers=upsert_headers, json=payload) # TODO: add query_name
             response.raise_for_status()  # Raise HTTPError for bad responses
             return True
         except requests.exceptions.RequestException as e:

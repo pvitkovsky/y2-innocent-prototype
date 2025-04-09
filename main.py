@@ -84,6 +84,14 @@ def printIds(apartaments: List[Apartment]):
     print(f"Total {len(apartaments)} objects")
     [print(f"{apt['token']}") for apt in apartaments]
 
+def sync(qname, apartments, state): # class? qname in constuctor;
+    filtered = remove_archived(apartments, state)
+    missing = check_missing(apartments, state)
+    print(f"Syncing apartaments for {qname}")
+    # TODO: add qname here?
+    printIds(filtered)
+    print(missing)
+    return filtered
 
 if __name__ == "__main__":
 
@@ -91,34 +99,27 @@ if __name__ == "__main__":
         supabase_url='https://kbbcllgitrzhwbyfgevc.supabase.co/rest/v1/apartaments_ii',
         supabase_key='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiYmNsbGdpdHJ6aHdieWZnZXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Nzg1NzksImV4cCI6MjA1ODU1NDU3OX0.acHkhagTOFGU88812SKyZe39nG4SM_9MpSmEIBMIH6w'
     )
-    state = client.get_state("dev_query");
 
     searches = [
         {
+          "key": "dev_query",
           "name": "Map", # print name
           "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=4000&maxPrice=5000&minRooms=2&maxRooms=3&property=1&balcony=1&multiCity=8700,6400,6900,9700"
         }
         # TODO: more searches;
     ]
 
-    #
     for search in searches:
-        apartaments: List[Apartment] = fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=False, parse=False)
-        filtered = remove_archived(apartaments, state)
-        printIds(filtered)
-
-        missing = check_missing(apartaments, state)
-        print(missing)
-
-        client.ingest_values(filtered)
+        state = client.get_state(search['key']);
+        apartments: List[Apartment] = fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=False, parse=False)
+        filtered = sync(search['key'], apartments, state)
+        client.ingest_values(filtered) # TODO: should hard update stuff;
 
     # dloader = ApartamentImageDownloader()
     # for search in searches:
     #    map: List[Apartment] = fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True, parse=True)
     #    # for idx, apt in enumerate(map):
     #    #    dloader.download_all_images(apt)
-
-
 
 
     # client.deactivate_id("xqq864cf")
