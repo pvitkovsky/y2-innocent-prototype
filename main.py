@@ -1,97 +1,9 @@
-import dataclasses
-import datetime
-import json
-import os
-import time
-import re
+
 from typing import List
 
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-
-from src.apartament_img import ApartamentImageDownloader
-from src.selenuim.base_page import BasePage
-from src.supa_client import SupaClient, SupaState
-from src.y2_ingest_svc import Y2IngestService, Apartment
-
-
-class EnhancedJSONEncoder(json.JSONEncoder):
-    def default(self, o):
-        if dataclasses.is_dataclass(o):
-            return dataclasses.asdict(o)
-        return super().default(o)
-
-def save_raw_file(name: str, url: str):
-    options = Options()
-    driver = webdriver.Chrome(options=options)
-    try:
-        page = BasePage(driver)
-        page.open(url)
-        time.sleep(1)
-        match = re.search("{.*}", driver.page_source)
-        if match:
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"{name}_{timestamp}.json"
-            with open(filename, "w", encoding="utf-8") as f:
-                f.write(match.group(0))
-            print(f"Page saved as: {filename}")
-    finally:
-        driver.quit()
-
-
-def get_latest_json(name: str) -> str:
-    files = [f for f in os.listdir('.') if f.startswith(name) and f.endswith('.json')]
-    if not files:
-        raise FileNotFoundError(f"No files found for name: {name}")
-
-    latest_file = max(files, key=os.path.getmtime)  # Get the most recently modified file
-    print(f"Latest JSON file: {latest_file}")
-    return latest_file
-
-
-def fetch_and_parse(name: str, url: str, fetch=True, parse=True):
-    if fetch:
-        save_raw_file(name, url)
-
-    source = get_latest_json(name)
-    if parse:
-        with open(source, "r") as f:
-            data = f.read()
-            svc = Y2IngestService(data)
-            print(json.dumps(svc.transform_data(), cls=EnhancedJSONEncoder))
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"parsed_{name}_{timestamp}.json"
-            with open(filename, "w", encoding="utf-8") as f:
-                f.write(json.dumps(svc.transform_data(), cls=EnhancedJSONEncoder))
-                print(f"Parsed JSON saved as: {filename}")
-
-    parsed = get_latest_json('parsed')
-    with open(parsed, "r") as f:
-        res: List[Apartment] = json.loads(f.read())
-        return res
-
-
-def remove_archived(apartaments: List[Apartment], state: List[SupaState]):
-    archivedDict = {apt.id for apt in state if apt.archived}
-    return [apt for apt in apartaments if apt['token'] not in archivedDict]
-
-
-def check_missing(apartaments: List[Apartment], state: List[SupaState]):
-    activeDict = {apt['token'] for apt in apartaments}
-    return [apt.id for apt in state if apt.id not in activeDict]
-
-def printIds(apartaments: List[Apartment]):
-    print(f"Total {len(apartaments)} objects")
-    [print(f"{apt['token']}") for apt in apartaments]
-
-def sync(qname, apartments, state): # class? qname in constuctor;
-    filtered = remove_archived(apartments, state)
-    missing = check_missing(apartments, state)
-    print(f"Syncing apartaments for {qname}")
-    # TODO: add qname here?
-    printIds(filtered)
-    print(missing)
-    return filtered
+from src.supa_client import SupaClient
+from src.sync_instance import SyncInstance
+from src.y2_ingest_svc import Apartment, Y2Fetcher
 
 if __name__ == "__main__":
 
@@ -99,6 +11,7 @@ if __name__ == "__main__":
         supabase_url='https://kbbcllgitrzhwbyfgevc.supabase.co/rest/v1/apartaments_ii',
         supabase_key='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiYmNsbGdpdHJ6aHdieWZnZXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Nzg1NzksImV4cCI6MjA1ODU1NDU3OX0.acHkhagTOFGU88812SKyZe39nG4SM_9MpSmEIBMIH6w'
     )
+    fetcher = Y2Fetcher()
 
     searches = [
         {
@@ -111,13 +24,16 @@ if __name__ == "__main__":
 
     for search in searches:
         state = client.get_state(search['key']);
-        apartments: List[Apartment] = fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=False, parse=False)
-        filtered = sync(search['key'], apartments, state)
+        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True, parse=True)
+        synchronizer = SyncInstance(search['key'])
+        filtered = synchronizer.sync(apartments, state)
         client.ingest_values(filtered) # TODO: should hard update stuff;
 
+
+    # FOR THE IMAGES; needs archive functionality;
     # dloader = ApartamentImageDownloader()
     # for search in searches:
-    #    map: List[Apartment] = fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True, parse=True)
+    #    map: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True, parse=True)
     #    # for idx, apt in enumerate(map):
     #    #    dloader.download_all_images(apt)
 
