@@ -10,6 +10,7 @@ from src.y2_ingest_svc import Apartment
 @dataclass
 class SupaState():
     id: str
+    query_name: str
     archived: bool
 
 class SupaClient:
@@ -25,7 +26,7 @@ class SupaClient:
         }
 
     def get_state(self, qName: str):
-        api_url = f"{self.url}?select=id,archived"
+        api_url = f"{self.url}?select=id,archived,query_name"
         params = {"query_name": f"eq.{qName}"}
         try:
             response = requests.get(api_url, headers=self.headers, params=params)
@@ -56,4 +57,14 @@ class SupaClient:
             return True
         except requests.exceptions.RequestException as e:
             print(f"Error during PATCH request: {e}")
+            return False
+
+    def delete(self, query_name: str):
+        try:
+            api_url = f"{self.url}?query_name=eq.{query_name}"
+            response = requests.delete(api_url, headers=self.headers)
+            response.raise_for_status()
+            return True
+        except requests.exceptions.RequestException as e:
+            print(f"Error during DELETE request: {e}")
             return False

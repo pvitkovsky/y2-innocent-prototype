@@ -23,11 +23,13 @@ if __name__ == "__main__":
     ]
 
     for search in searches:
-        state = client.get_state(search['key']);
-        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True, parse=True)
-        synchronizer = SyncInstance(search['key'])
+        query_name = search['key']
+        state = client.get_state(query_name)
+        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=False, parse=True)
+        synchronizer = SyncInstance(query_name)
         filtered = synchronizer.sync(apartments, state)
-        client.ingest_values(filtered) # TODO: should hard update stuff;
+        client.delete(query_name)
+        client.ingest_values(filtered) # TODO: should hard update stuff; delete + insert, not upsert!
 
 
     # FOR THE IMAGES; needs archive functionality;
