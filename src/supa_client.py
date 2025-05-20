@@ -47,6 +47,7 @@ class SupaClient:
             print(f"Error during PATCH request: {e}")
             return False
 
+    # TODO: looks dev_query
     def ingest_values(self, apartaments: List[Apartment]):
         api_url = f"{self.url}"
         payload = [{'id': apt['token'], 'data': json.dumps(apt)} for apt in apartaments]

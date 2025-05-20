@@ -15,13 +15,18 @@ if __name__ == "__main__":
 
     searches = [
         {
-          "key": "dev_query",
-          "name": "Map", # print name
+          "key": "dev_query_5k",
+          "name": "Up To 5K", # print name
           "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=4000&maxPrice=5000&minRooms=2&maxRooms=3&property=1&balcony=1&multiCity=8700,6400,6900,9700"
+        },
+        {
+            "key": "dev_query_4k",
+            "name": "Up To 4K",  # print name
+            "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=3000&maxPrice=4000&minRooms=2&maxRooms=3&property=1&balcony=1&multiCity=8700,6400,6900,9700"
         }
-        # TODO: more searches;
     ]
 
+    # Fetch and Parse:
     for search in searches:
         query_name = search['key']
         state = client.get_state(query_name)
@@ -44,8 +49,7 @@ if __name__ == "__main__":
     # state = client.get_state("dev_query");
     # print(state)
 
-    #TODO: function that dumps unneeded IDs from Supa (probably a request: deactivated: true)
-    #TODO: function that before a search, gets hot IDs from Supa and voids them if search brings none?
-    #  ^ is the above a one request? id + boolean dumped?
-    #TODO: function that updates Supa
+    # TODO: dev and prod envs;
+    # TODO: next supa table with the list of queries, how does it get updated?
+    # TODO: update the project to use tabs; think first;
 
