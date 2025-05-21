@@ -3,7 +3,13 @@ from typing import List
 
 from src.supa_client import SupaClient
 from src.sync_instance import SyncInstance
-from src.y2_ingest_svc import Apartment, Y2Fetcher
+from src.y2_ingest_svc import Apartment, Y2Fetcher, IngestedApartament
+
+
+def __get_ingested__(apt: Apartment, query_name: str) -> IngestedApartament:
+    res = IngestedApartament(apt['coords'], apt['price'], apt['token'], apt['squareMeter'], apt['pricePerMeter'], apt['roomsCount'], apt['metadata'], query_name)
+    return res
+
 
 if __name__ == "__main__":
 
@@ -26,7 +32,8 @@ if __name__ == "__main__":
         }
     ]
 
-    # Fetch and Parse:
+    # TODO: fix parse = False doesn't diffing
+    # TODO: ingest the above to queries table
     for search in searches:
         query_name = search['key']
         state = client.get_state(query_name)
@@ -34,7 +41,8 @@ if __name__ == "__main__":
         synchronizer = SyncInstance(query_name)
         filtered = synchronizer.sync(apartments, state)
         client.delete(query_name)
-        client.ingest_values(filtered) # TODO: should hard update stuff; delete + insert, not upsert!
+        ingested: List[IngestedApartament] = [__get_ingested__(x, query_name) for x in filtered]
+        client.ingest_values(ingested)
 
 
     # FOR THE IMAGES; needs archive functionality;

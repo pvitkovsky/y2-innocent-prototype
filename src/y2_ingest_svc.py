@@ -35,6 +35,10 @@ class Apartment():
     roomsCount: int
     metadata: Metadata
 
+@dataclass
+class IngestedApartament(Apartment):
+    query_name: str
+
 class Y2IngestService:
     def __init__(self, source_json: str):
         self.source_json = source_json
@@ -118,7 +122,7 @@ class Y2Fetcher():
         return latest_file
 
 
-    def fetch_and_parse(self, name: str, url: str, fetch=True, parse=True):
+    def fetch_and_parse(self, name: str, url: str, fetch=True, parse=True) -> List[IngestedApartament]:
         if fetch:
             self.__save_raw_file__(name, url)
 
