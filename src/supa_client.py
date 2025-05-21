@@ -1,3 +1,4 @@
+import dataclasses
 import json
 from dataclasses import dataclass
 from typing import List
@@ -13,11 +14,21 @@ class SupaState():
     query_name: str
     archived: bool
 
+
+
+@dataclass
+class ApartamentQuery:
+    id: str
+    name: str
+    query_string: str
+
+
 class SupaClient:
 
 
-    def __init__(self, supabase_url: str, supabase_key: str):
-        self.url = supabase_url
+    def __init__(self, queries_url: str, supabase_url: str, supabase_key: str):
+        self.queries_url = queries_url
+        self.apts_url = supabase_url
         self.token = supabase_key
         self.headers = {
             "apikey": self.token,
@@ -26,7 +37,7 @@ class SupaClient:
         }
 
     def get_state(self, qName: str):
-        api_url = f"{self.url}?select=id,archived,query_name"
+        api_url = f"{self.apts_url}?select=id,archived,query_name"
         params = {"query_name": f"eq.{qName}"}
         try:
             response = requests.get(api_url, headers=self.headers, params=params)
@@ -37,7 +48,7 @@ class SupaClient:
             return None
 
     def deactivate_id(self, id_value: str):
-        api_url = f"{self.url}?id=eq.{id_value}"
+        api_url = f"{self.apts_url}?id=eq.{id_value}"
         payload = {"archived": "TRUE"}
         try:
             response = requests.patch(api_url, headers=self.headers, json=payload)
@@ -47,9 +58,18 @@ class SupaClient:
             print(f"Error during PATCH request: {e}")
             return False
 
-    # TODO: looks dev_query
+    def delete(self, query_name: str):
+        try:
+            api_url = f"{self.apts_url}?query_name=eq.{query_name}"
+            response = requests.delete(api_url, headers=self.headers)
+            response.raise_for_status()
+            return True
+        except requests.exceptions.RequestException as e:
+            print(f"Error during DELETE request: {e}")
+            return False
+
     def ingest_values(self, apartments: List[IngestedApartament]):
-        api_url = f"{self.url}"
+        api_url = f"{self.apts_url}"
         payload = [{'id': apt.token, 'data': json.dumps(apt, cls=EnhancedJSONEncoder), 'query_name': apt.query_name} for apt in apartments]
         upsert_headers = {**self.headers, **{"Prefer" : "resolution=merge-duplicates"}}
         try:
@@ -60,12 +80,16 @@ class SupaClient:
             print(f"Error during PATCH request: {e}")
             return False
 
-    def delete(self, query_name: str):
+
+
+    def ingest_queries(self, queries: List[ApartamentQuery]):
+        api_url = f"{self.queries_url}"
+        payload = [dataclasses.asdict(x) for x in queries]
+        headers = {**self.headers, **{"Prefer" : "resolution=merge-duplicates"}}
         try:
-            api_url = f"{self.url}?query_name=eq.{query_name}"
-            response = requests.delete(api_url, headers=self.headers)
-            response.raise_for_status()
+            response = requests.post(api_url, headers=headers, json=payload) # TODO: add query_name
+            response.raise_for_status()  # Raise HTTPError for bad responses
             return True
         except requests.exceptions.RequestException as e:
-            print(f"Error during DELETE request: {e}")
+            print(f"Error during PATCH request: {e}")
             return False

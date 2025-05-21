@@ -39,6 +39,12 @@ class Apartment():
 class IngestedApartament(Apartment):
     query_name: str
 
+def get_ingested(apt: Apartment, query_name: str) -> IngestedApartament:
+    res = IngestedApartament(apt['coords'], apt['price'], apt['token'], apt['squareMeter'], apt['pricePerMeter'], apt['roomsCount'], apt['metadata'], query_name)
+    return res
+
+
+
 class Y2IngestService:
     def __init__(self, source_json: str):
         self.source_json = source_json
@@ -121,7 +127,7 @@ class Y2Fetcher():
         print(f"Latest JSON file: {latest_file}")
         return latest_file
 
-
+    # TODO: fix parse = False doesn't diffing
     def fetch_and_parse(self, name: str, url: str, fetch=True, parse=True) -> List[IngestedApartament]:
         if fetch:
             self.__save_raw_file__(name, url)

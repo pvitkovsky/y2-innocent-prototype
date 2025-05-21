@@ -1,7 +1,7 @@
 from mitmproxy import http
 
 def response(flow: http.HTTPFlow) -> None:
-    print(flow.request.url)
+    print(flow.request.apts_url)
     print(flow.response)
     # if "gw.yad2.co.il/recommendations" in flow.request.url:
     #     print("Captured JSON:", flow.response)
