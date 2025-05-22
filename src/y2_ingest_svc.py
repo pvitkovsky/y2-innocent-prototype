@@ -36,12 +36,10 @@ class Apartment():
     metadata: Metadata
 
 @dataclass
-class IngestedApartament(Apartment):
+class IngestedApartament():
+    data: Apartment
     query_name: str
     score: int
-
-
-
 
 
 class Y2IngestService:

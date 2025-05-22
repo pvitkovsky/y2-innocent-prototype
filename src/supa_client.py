@@ -71,7 +71,15 @@ class SupaClient:
 
     def ingest_values(self, apartments: List[IngestedApartament]):
         api_url = f"{self.apts_url}"
-        payload = [{'id': apt.token, 'data': json.dumps(apt, cls=EnhancedJSONEncoder), 'query_name': apt.query_name} for apt in apartments]
+        payload = [
+            {
+                'id': apt.data['token'],
+                'data': json.dumps(apt.data, cls=EnhancedJSONEncoder),
+                'query_name': apt.query_name,
+                'score': apt.score
+            }
+        for apt in apartments]
+
         upsert_headers = {**self.headers, **{"Prefer" : "resolution=merge-duplicates"}}
         try:
             response = requests.post(api_url, headers=upsert_headers, json=payload) # TODO: add query_name

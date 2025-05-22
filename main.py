@@ -40,18 +40,18 @@ if __name__ == "__main__":
     for search in searches:
         query_name = search['key']
         state = client.get_state(query_name)
-        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True)
+        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=False)
         synchronizer = SyncInstance(query_name)
         ingested = synchronizer.sync(apartments, state) # TODO: doesn't do anything archived;
         client.delete(query_name)
         client.ingest_values(ingested)
 
-        # TOOD: consider storing missing;
-        # missing = synchronizer.check_missing(apartments, state)
-        # client.ingest_missing(missing)
+        missing = synchronizer.check_missing(apartments, state)
+        synchronizer.print(missing, "Missing apartaments")
+
 
     client.ingest_queries([ApartamentQuery(search['key'], search['name'], search['url']) for search in searches])
 
-    # TODO: UI + 'archive';
+    # TODO: 'archive';
     # TODO: consider if can do w Curl and not selenium to make this deployedl
 
