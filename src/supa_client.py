@@ -1,7 +1,7 @@
 import dataclasses
 import json
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 
 import requests
 
@@ -11,6 +11,7 @@ from src.y2_ingest_svc import Apartment, IngestedApartament, EnhancedJSONEncoder
 @dataclass
 class SupaState():
     id: str
+    score: Union[int, None]
     query_name: str
     archived: bool
 
@@ -36,8 +37,8 @@ class SupaClient:
             "Content-Type": "application/json"
         }
 
-    def get_state(self, qName: str):
-        api_url = f"{self.apts_url}?select=id,archived,query_name"
+    def get_state(self, qName: str) -> List[SupaState]:
+        api_url = f"{self.apts_url}?select=id,score,archived,query_name"
         params = {"query_name": f"eq.{qName}"}
         try:
             response = requests.get(api_url, headers=self.headers, params=params)
@@ -45,7 +46,7 @@ class SupaClient:
             return [SupaState(**item) for item in response.json()]
         except requests.exceptions.RequestException as e:
             print(f"Error during GET request: {e}")
-            return None
+            return []
 
     def deactivate_id(self, id_value: str):
         api_url = f"{self.apts_url}?id=eq.{id_value}"

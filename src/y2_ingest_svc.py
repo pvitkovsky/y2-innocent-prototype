@@ -38,10 +38,9 @@ class Apartment():
 @dataclass
 class IngestedApartament(Apartment):
     query_name: str
+    score: int
 
-def get_ingested(apt: Apartment, query_name: str) -> IngestedApartament:
-    res = IngestedApartament(apt['coords'], apt['price'], apt['token'], apt['squareMeter'], apt['pricePerMeter'], apt['roomsCount'], apt['metadata'], query_name)
-    return res
+
 
 
 

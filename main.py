@@ -3,7 +3,7 @@ from typing import List
 
 from src.supa_client import SupaClient, ApartamentQuery
 from src.sync_instance import SyncInstance
-from src.y2_ingest_svc import Apartment, Y2Fetcher, IngestedApartament, get_ingested
+from src.y2_ingest_svc import Apartment, Y2Fetcher
 
 if __name__ == "__main__":
 
@@ -40,12 +40,15 @@ if __name__ == "__main__":
     for search in searches:
         query_name = search['key']
         state = client.get_state(query_name)
-        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=False)
+        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True)
         synchronizer = SyncInstance(query_name)
-        filtered = synchronizer.sync(apartments, state)
+        ingested = synchronizer.sync(apartments, state) # TODO: doesn't do anything archived;
         client.delete(query_name)
-        ingested: List[IngestedApartament] = [get_ingested(x, query_name) for x in filtered]
         client.ingest_values(ingested)
+
+        # TOOD: consider storing missing;
+        # missing = synchronizer.check_missing(apartments, state)
+        # client.ingest_missing(missing)
 
     client.ingest_queries([ApartamentQuery(search['key'], search['name'], search['url']) for search in searches])
 
