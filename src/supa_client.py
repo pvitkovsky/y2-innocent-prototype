@@ -70,13 +70,15 @@ class SupaClient:
             return False
 
     def ingest_values(self, apartments: List[IngestedApartament]):
+        print(f"Ingesting {len(apartments)}, archived: {len(list(filter(lambda a: a.archived is True, apartments)))}")
         api_url = f"{self.apts_url}"
         payload = [
             {
                 'id': apt.data['token'],
                 'data': json.dumps(apt.data, cls=EnhancedJSONEncoder),
                 'query_name': apt.query_name,
-                'score': apt.score
+                'score': apt.score,
+                'archived': apt.archived
             }
         for apt in apartments]
 

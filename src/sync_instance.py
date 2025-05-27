@@ -8,14 +8,14 @@ class SyncInstance():
     def __init__(self, qname):
         self.qname = qname
 
-    def get_ingested(self, apt: Apartment, score: int) -> IngestedApartament:
-        res = IngestedApartament(apt, self.qname, score)
+    def get_ingested(self, apt: Apartment, score: int, archived: bool) -> IngestedApartament:
+        res = IngestedApartament(apt, self.qname, score, archived)
         return res
 
     def remove_archived(self, apartaments: List[Apartment], state: List[SupaState]) -> List[IngestedApartament]:
         archivedDict = {apt.id for apt in state if apt.archived}
         scoreDict = {apt.id : apt.score for apt in state if apt.score is not None}
-        return [self.get_ingested(apt, scoreDict.get(apt['token'])) for apt in apartaments if apt['token'] not in archivedDict]
+        return [self.get_ingested(apt, scoreDict.get(apt['token']), archived=apt['token'] in archivedDict) for apt in apartaments]
 
     def check_missing(self, apartaments: List[Apartment], state: List[SupaState]):
         activeDict = {apt['token'] for apt in apartaments}

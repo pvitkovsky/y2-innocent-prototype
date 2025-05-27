@@ -40,6 +40,7 @@ class IngestedApartament():
     data: Apartment
     query_name: str
     score: int
+    archived: bool
 
 
 class Y2IngestService:
