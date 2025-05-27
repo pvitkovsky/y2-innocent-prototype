@@ -125,8 +125,7 @@ class Y2Fetcher():
         print(f"Latest JSON file: {latest_file}")
         return latest_file
 
-    # TODO: fix parse = False doesn't diffing
-    def fetch_and_parse(self, name: str, url: str, fetch=True, parse=True) -> List[IngestedApartament]:
+    def fetch_and_parse(self, name: str, url: str, fetch=True, parse=True) -> List[Apartment]:
         if fetch:
             self.__save_raw_file__(name, url)
 

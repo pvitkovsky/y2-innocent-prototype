@@ -1,9 +1,9 @@
 
 from typing import List
 
-from src.supa_client import SupaClient, ApartamentQuery
+from src.supa_client import SupaClient, ApartamentQuery, SupaState
 from src.sync_instance import SyncInstance
-from src.y2_ingest_svc import Apartment, Y2Fetcher
+from src.y2_ingest_svc import Apartment, Y2Fetcher, IngestedApartament
 
 if __name__ == "__main__":
 
@@ -17,7 +17,7 @@ if __name__ == "__main__":
     searches: List[dict] = [
         {
             "key": "dev_query_7k",
-            "name": "Local - Up To 7K", 
+            "name": "Local - Up To 7K",
             "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=6000&maxPrice=7000&minRooms=2&maxRooms=3&property=1&balcony=1&multiCity=8700,6400,6900,9700"
         },
         {
@@ -62,18 +62,23 @@ if __name__ == "__main__":
     for search in searches:
         query_name = search['key']
         state = client.get_state(query_name)
-        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=False)
+        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True)
         synchronizer = SyncInstance(query_name)
         ingested = synchronizer.sync(apartments, state)
         client.delete(query_name)
         client.ingest_values(ingested)
 
-        missing = synchronizer.check_missing(apartments, state)
-        synchronizer.print(missing, "Missing apartaments")
+        missing: List[SupaState] = synchronizer.check_missing(apartments, state)
+        favs_missing = list(filter(lambda a: a.score is not None, missing))
+        print(f"Missing apartaments {len(missing)}, "
+                           f" favourites missing: {len(favs_missing)}")
+        if len(favs_missing) > 0:
+            synchronizer.extended_print(favs_missing)
 
 
     client.ingest_queries([ApartamentQuery(search['key'], search['name'], search['url']) for search in searches])
 
+    # TODO: consider having at least launch args to fetch or dry run; as well, cron job on my gaming pc to sync;
     # TODO: consider if can do w Curl and not selenium to make this deployed
     # TODO: consider getting the descriptions;
 

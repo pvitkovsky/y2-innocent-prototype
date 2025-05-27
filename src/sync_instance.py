@@ -21,10 +21,8 @@ class SyncInstance():
         activeDict = {apt['token'] for apt in apartaments}
         return [apt for apt in state if apt.id not in activeDict and apt.score is not None]
 
-    def print(self, apartaments: List[Apartment], description):
-        print(description)
-        print(f"Total {len(apartaments)} objects")
-        [print(f"{apt['token']}: {apt['price']} ") for apt in apartaments]
+    def extended_print(self, apartaments: List[SupaState]):
+        [print(f"     {apt.id}, with price: {apt.data['price']}, meters: {apt.data['squareMeter']}") for apt in apartaments]
 
     def sync(self, apartments, state) -> List[IngestedApartament]:
         filtered = self.remove_archived(apartments, state)

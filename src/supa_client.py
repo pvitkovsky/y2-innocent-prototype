@@ -14,6 +14,7 @@ class SupaState():
     score: Union[int, None]
     query_name: str
     archived: bool
+    data: Apartment
 
 
 
@@ -38,12 +39,17 @@ class SupaClient:
         }
 
     def get_state(self, qName: str) -> List[SupaState]:
-        api_url = f"{self.apts_url}?select=id,score,archived,query_name"
+        api_url = f"{self.apts_url}?select=id,score,archived,query_name,data"
         params = {"query_name": f"eq.{qName}"}
         try:
             response = requests.get(api_url, headers=self.headers, params=params)
             response.raise_for_status()
-            return [SupaState(**item) for item in response.json()]
+            res = []
+            for item in response.json():
+                parsed = SupaState(**item)
+                parsed.data = json.loads(item['data'])
+                res.append(parsed)
+            return res
         except requests.exceptions.RequestException as e:
             print(f"Error during GET request: {e}")
             return []
@@ -70,7 +76,9 @@ class SupaClient:
             return False
 
     def ingest_values(self, apartments: List[IngestedApartament]):
-        print(f"Ingesting {len(apartments)}, archived: {len(list(filter(lambda a: a.archived is True, apartments)))}")
+        print(f"Ingesting {len(apartments)}, "
+              f" favourites: {len(list(filter(lambda a: a.score is not None, apartments)))}"
+              f" archived: {len(list(filter(lambda a: a.archived is True, apartments)))}")
         api_url = f"{self.apts_url}"
         payload = [
             {
