@@ -8,22 +8,17 @@ class SyncInstance():
     def __init__(self, qname):
         self.qname = qname
 
-    def get_ingested(self, apt: Apartment, score: int, archived: bool) -> IngestedApartament:
-        res = IngestedApartament(apt, self.qname, score, archived)
+    def get_ingested(self, apt: Apartment) -> IngestedApartament:
+        res = IngestedApartament(apt, self.qname)
         return res
 
-    def remove_archived(self, apartaments: List[Apartment], state: List[SupaState]) -> List[IngestedApartament]:
-        archivedDict = {apt.id for apt in state if apt.archived}
-        scoreDict = {apt.id : apt.score for apt in state if apt.score is not None}
-        return [self.get_ingested(apt, scoreDict.get(apt['token']), archived=apt['token'] in archivedDict) for apt in apartaments]
-
-    def check_missing(self, apartaments: List[Apartment], state: List[SupaState]):
-        activeDict = {apt['token'] for apt in apartaments}
-        return [apt for apt in state if apt.id not in activeDict and apt.score is not None]
+    # def check_missing(self, apartaments: List[Apartment], state: List[SupaState]):
+    #     activeDict = {apt['token'] for apt in apartaments}
+    #     return [apt for apt in state if apt.id not in activeDict and apt.score is not None]
 
     def extended_print(self, apartaments: List[SupaState]):
         [print(f"     {apt.id}, with price: {apt.data['price']}, meters: {apt.data['squareMeter']}") for apt in apartaments]
 
     def sync(self, apartments, state) -> List[IngestedApartament]:
-        filtered = self.remove_archived(apartments, state)
-        return filtered
+        ingested = [self.get_ingested(apt) for apt in apartments]
+        return ingested

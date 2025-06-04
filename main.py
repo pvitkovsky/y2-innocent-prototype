@@ -59,26 +59,19 @@ if __name__ == "__main__":
         }
     ]
 
+    # TODO: solve cascade problem; ingesting dumps the cascade
     for search in searches:
         query_name = search['key']
         state = client.get_state(query_name)
-        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True)
+        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=False)
         synchronizer = SyncInstance(query_name)
         ingested = synchronizer.sync(apartments, state)
         client.delete(query_name)
         client.ingest_values(ingested)
-
-        missing: List[SupaState] = synchronizer.check_missing(apartments, state)
-        favs_missing = list(filter(lambda a: a.score is not None, missing))
-        print(f"Missing apartaments {len(missing)}, "
-                           f" favourites missing: {len(favs_missing)}")
-        if len(favs_missing) > 0:
-            synchronizer.extended_print(favs_missing)
 
 
     client.ingest_queries([ApartamentQuery(search['key'], search['name'], search['url']) for search in searches])
 
     # TODO: consider having at least launch args to fetch or dry run; as well, cron job on my gaming pc to sync;
     # TODO: consider if can do w Curl and not selenium to make this deployed
-    # TODO: consider getting the descriptions;
 

@@ -39,9 +39,6 @@ class Apartment():
 class IngestedApartament():
     data: Apartment
     query_name: str
-    score: int
-    archived: bool
-
 
 class Y2IngestService:
     def __init__(self, source_json: str):

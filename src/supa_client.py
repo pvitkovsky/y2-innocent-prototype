@@ -11,9 +11,7 @@ from src.y2_ingest_svc import Apartment, IngestedApartament, EnhancedJSONEncoder
 @dataclass
 class SupaState():
     id: str
-    score: Union[int, None]
     query_name: str
-    archived: bool
     data: Apartment
 
 
@@ -39,7 +37,7 @@ class SupaClient:
         }
 
     def get_state(self, qName: str) -> List[SupaState]:
-        api_url = f"{self.apts_url}?select=id,score,archived,query_name,data"
+        api_url = f"{self.apts_url}?select=id,query_name,data"
         params = {"query_name": f"eq.{qName}"}
         try:
             response = requests.get(api_url, headers=self.headers, params=params)
@@ -76,17 +74,13 @@ class SupaClient:
             return False
 
     def ingest_values(self, apartments: List[IngestedApartament]):
-        print(f"Ingesting {len(apartments)}, "
-              f" favourites: {len(list(filter(lambda a: a.score is not None, apartments)))}"
-              f" archived: {len(list(filter(lambda a: a.archived is True, apartments)))}")
+        print(f"Ingesting {len(apartments)}")
         api_url = f"{self.apts_url}"
         payload = [
             {
                 'id': apt.data['token'],
                 'data': json.dumps(apt.data, cls=EnhancedJSONEncoder),
-                'query_name': apt.query_name,
-                'score': apt.score,
-                'archived': apt.archived
+                'query_name': apt.query_name
             }
         for apt in apartments]
 
