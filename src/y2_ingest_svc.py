@@ -75,18 +75,6 @@ class Y2IngestService:
         except Exception:
             return None
 
-# Example usage (assuming you have sourceJson and a function setTransformedJson):
-# sourceJson = '{"data": {"markers": [{"address": {"coords": {"lon": 34.8, "lat": 32.1}}, "price": 1500000, "token": "abc1", "additionalDetails": {"squareMeter": 100, "roomsCount": 3}, "metaData": {"coverImage": "img1.jpg", "images": ["img1.jpg", "img2.jpg"], "squareMeterBuild": 120}}, {"address": {"coords": {"lon": 34.9, "lat": 32.2}}, "price": 1200000, "token": "def2", "additionalDetails": {"squareMeter": 80, "roomsCount": 2}, "metaData": {"coverImage": "img3.jpg", "images": ["img3.jpg"], "squareMeterBuild": 90}}]}}'
-# def setTransformedJson(json_str):
-#     print(f"Transformed JSON: {json_str}")
-#
-# ingest_service = Y2IngestService(sourceJson, setTransformedJson)
-# sorted_apartments = ingest_service.transform_data()
-# if sorted_apartments:
-#     print("\nSorted Apartments:")
-#     for apartment in sorted_apartments:
-#         print(apartment)
-
 class EnhancedJSONEncoder(json.JSONEncoder):
     def default(self, o):
         if dataclasses.is_dataclass(o):
@@ -122,21 +110,20 @@ class Y2Fetcher():
         print(f"Latest JSON file: {latest_file}")
         return latest_file
 
-    def fetch_and_parse(self, name: str, url: str, fetch=True, parse=True) -> List[Apartment]:
+    def fetch_and_parse(self, name: str, url: str, fetch=True) -> List[Apartment]:
         if fetch:
             self.__save_raw_file__(name, url)
 
         source = self.__get_latest_json__(name)
-        if parse:
-            with open(source, "r") as f:
-                data = f.read()
-                svc = Y2IngestService(data)
-                print(json.dumps(svc.transform_data(), cls=EnhancedJSONEncoder))
-                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                filename = f"parsed_{name}_{timestamp}.json"
-                with open(filename, "w", encoding="utf-8") as f:
-                    f.write(json.dumps(svc.transform_data(), cls=EnhancedJSONEncoder))
-                    print(f"Parsed JSON saved as: {filename}")
+        with open(source, "r") as f:
+            data = f.read()
+            svc = Y2IngestService(data)
+            print(json.dumps(svc.transform_data(), cls=EnhancedJSONEncoder))
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"parsed_{name}_{timestamp}.json"
+            with open(filename, "w", encoding="utf-8") as f:
+                f.write(json.dumps(svc.transform_data(), cls=EnhancedJSONEncoder))
+                print(f"Parsed JSON saved as: {filename}")
 
         parsed = self.__get_latest_json__('parsed')
         with open(parsed, "r") as f:
