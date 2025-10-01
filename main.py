@@ -6,7 +6,7 @@ from src.supa_client import SupaClient, ApartamentQuery, SupaState
 from src.sync_instance import SyncInstance
 from src.y2_ingest_svc import Apartment, Y2Fetcher, IngestedApartament
 
-def update_portal(searches: List[dict]):
+def update_portal(searches: List[dict], fetch = True):
 
     client = SupaClient(
         queries_url='https://kbbcllgitrzhwbyfgevc.supabase.co/rest/v1/queries',
@@ -19,7 +19,7 @@ def update_portal(searches: List[dict]):
     for search in searches:
         query_name = search['key']
         state = client.get_state(query_name)
-        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=True)
+        apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=fetch)
         synchronizer = SyncInstance(query_name)
         ingested = synchronizer.sync(apartments, state)
         client.delete(query_name)
@@ -84,8 +84,10 @@ if __name__ == "__main__":
         }
     ]
 
-    update_portal(searches)
-    # TODO: solve cascade problem; ingesting dumps the cascade
+    # UNCOMMENT TO UPDATE PORTAL
+    update_portal(searches, False) # TODO: fix supa calls; sth off;
+
+
     # TODO: consider having at least launch args to fetch or dry run; as well, cron job on my gaming pc to sync;
     # TODO: consider if can do w Curl and not selenium to make this deployed
     # TODO: consider getting the descriptions;
