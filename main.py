@@ -9,9 +9,9 @@ from src.y2_ingest_svc import Apartment, Y2Fetcher, IngestedApartament
 def update_portal(searches: List[dict], fetch = True):
 
     client = SupaClient(
-        queries_url='https://kbbcllgitrzhwbyfgevc.supabase.co/rest/v1/queries',
-        supabase_url='https://kbbcllgitrzhwbyfgevc.supabase.co/rest/v1/apartaments_ii',
-        supabase_key='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiYmNsbGdpdHJ6aHdieWZnZXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Nzg1NzksImV4cCI6MjA1ODU1NDU3OX0.acHkhagTOFGU88812SKyZe39nG4SM_9MpSmEIBMIH6w'
+        queries_url='https://zysuftctsbaahhbcpfkp.supabase.co/rest/v1/queries',
+        supabase_url='https://zysuftctsbaahhbcpfkp.supabase.co/rest/v1/apartaments_ii',
+        supabase_key='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5c3VmdGN0c2JhYWhoYmNwZmtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MTY1NzQsImV4cCI6MjA2NTI5MjU3NH0.Xd4XRqDCtxPivH_ilyB8EiG9UTR1Npi8xzYFO1OA9_I'
     )
     fetcher = Y2Fetcher()
 
@@ -25,13 +25,13 @@ def update_portal(searches: List[dict], fetch = True):
         client.delete(query_name)
         client.ingest_values(ingested)
 
-        missing: List[SupaState] = synchronizer.check_missing(apartments, state)
-        favs_missing = list(filter(lambda a: a.score is not None, missing))
-        print(f"Missing apartaments {len(missing)}, "
-                           f" favourites missing: {len(favs_missing)}")
-        if len(favs_missing) > 0:
-            synchronizer.extended_print(favs_missing)
-
+        # TODO: whatever next in terms of client synchro comes, IDK;
+        # missing: List[SupaState] = synchronizer.check_missing(apartments, state)
+        # favs_missing = list(filter(lambda a: a.score is not None, missing))
+        # print(f"Missing apartaments {len(missing)}, "
+        #                    f" favourites missing: {len(favs_missing)}")
+        # if len(favs_missing) > 0:
+        #     synchronizer.extended_print(favs_missing)
 
     client.ingest_queries([ApartamentQuery(search['key'], search['name'], search['url']) for search in searches])
 
