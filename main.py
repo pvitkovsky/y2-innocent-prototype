@@ -1,10 +1,20 @@
-
+from dataclasses import dataclass, asdict
 from typing import List
 
-from src.apartament_img import ApartamentImageDownloader
 from src.supa_client import SupaClient, ApartamentQuery, SupaState
 from src.sync_instance import SyncInstance
-from src.y2_ingest_svc import Apartment, Y2Fetcher, IngestedApartament
+from src.y2_ingest_svc import Apartment, Y2Fetcher, IngestedApartament, ScoredApartament
+
+
+def add_scores(apartment: Apartment)-> ScoredApartament:
+    return ScoredApartament(**asdict(apartment), gui_score = 1)
+
+
+def gpu_filter(apartments: List[Apartment]) -> List[Apartment]:
+    scored = [add_scores(apt) for apt in apartments]
+    res = [scoredApt for scoredApt in scored if scoredApt.gui_score > 0.5]
+    return res
+
 
 def update_portal(searches: List[dict], fetch = True):
 
@@ -20,6 +30,9 @@ def update_portal(searches: List[dict], fetch = True):
         query_name = search['key']
         state = client.get_state(query_name)
         apartments: List[Apartment] = fetcher.fetch_and_parse(name=search['name'].lower(), url=search['url'], fetch=fetch)
+        # scores: ScoredApartament (?)
+        apartments = gpu_filter(apartments)
+        # needs filtering;
         synchronizer = SyncInstance(query_name)
         ingested = synchronizer.sync(apartments, state)
         client.delete(query_name)

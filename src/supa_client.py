@@ -79,9 +79,10 @@ class SupaClient:
         api_url = f"{self.apts_url}"
         payload = [
             {
-                'id': apt.data['token'],
+                'id': apt.data.token,
                 'data': json.dumps(apt.data, cls=EnhancedJSONEncoder),
-                'query_name': apt.query_name
+                'query_name': apt.query_name,
+                'gui_score': apt.data.gui_score
             }
         for apt in apartments]
 

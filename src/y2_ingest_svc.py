@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import dataclasses
 import datetime
 import json
@@ -36,8 +35,13 @@ class Apartment():
     metadata: Metadata
 
 @dataclass
+class ScoredApartament(Apartment):
+    gui_score: float
+
+
+@dataclass
 class IngestedApartament():
-    data: Apartment
+    data: ScoredApartament
     query_name: str
 
 class Y2IngestService:
@@ -118,14 +122,15 @@ class Y2Fetcher():
         with open(source, "r") as f:
             data = f.read()
             svc = Y2IngestService(data)
-            print(json.dumps(svc.transform_data(), cls=EnhancedJSONEncoder))
+            data = svc.transform_data()
+            print(json.dumps(data, cls=EnhancedJSONEncoder))
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"parsed_{name}_{timestamp}.json"
             with open(filename, "w", encoding="utf-8") as f:
-                f.write(json.dumps(svc.transform_data(), cls=EnhancedJSONEncoder))
+                f.write(json.dumps(data, cls=EnhancedJSONEncoder))
                 print(f"Parsed JSON saved as: {filename}")
 
         parsed = self.__get_latest_json__('parsed')
         with open(parsed, "r") as f:
-            res: List[Apartment] = json.loads(f.read())
+            res: List[Apartment] = [Apartment(**apt) for apt in json.loads(f.read())]
             return res
