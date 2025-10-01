@@ -50,33 +50,33 @@ if __name__ == "__main__":
             "name": "Local - Up To 6K",
             "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=5000&maxPrice=6000&minRooms=2&maxRooms=3&property=1&balcony=1&multiCity=8700,6400,6900,9700"
         },
-        {
-            "key": "dev_query_5k",
-            "name": "Local - Up To 5K",
-            "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=4000&maxPrice=5000&minRooms=2&maxRooms=3&property=1&balcony=1&multiCity=8700,6400,6900,9700"
-        },
-        {
-            "key": "dev_query_4k",
-            "name": "Local - Up To 4K",
-            "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=3000&maxPrice=4000&minRooms=2&maxRooms=3&property=1&balcony=1&multiNeighborhood=1462&multiCity=8600,6300"
-        },
+        # {
+        #     "key": "dev_query_5k",
+        #     "name": "Local - Up To 5K",
+        #     "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=4000&maxPrice=5000&minRooms=2&maxRooms=3&property=1&balcony=1&multiCity=8700,6400,6900,9700"
+        # },
+        # {
+        #     "key": "dev_query_4k",
+        #     "name": "Local - Up To 4K",
+        #     "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=3000&maxPrice=4000&minRooms=2&maxRooms=3&property=1&balcony=1&multiNeighborhood=1462&multiCity=8600,6300"
+        # },
 
 
-        {
-            "key": "rg_query_7k",
-            "name": "Ramat Gan - Up To 7K",
-            "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=6000&maxPrice=7000&minRooms=2&maxRooms=3&property=1&balcony=1&multiNeighborhood=1462&multiCity=8600,6300"
-        },
-        {
-            "key": "rg_query_6k",
-            "name": "Ramat Gan - Up To 6K",
-            "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=5000&maxPrice=6000&minRooms=2&maxRooms=3&property=1&balcony=1&multiNeighborhood=1462&multiCity=8600,6300"
-        },
-        {
-            "key": "rg_query_5k",
-            "name": "Ramat Gan - Up To 5K",
-            "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=4000&maxPrice=5000&minRooms=2&maxRooms=3&property=1&balcony=1&multiNeighborhood=1462&multiCity=8600,6300"
-        },
+        # {
+        #     "key": "rg_query_7k",
+        #     "name": "Ramat Gan - Up To 7K",
+        #     "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=6000&maxPrice=7000&minRooms=2&maxRooms=3&property=1&balcony=1&multiNeighborhood=1462&multiCity=8600,6300"
+        # },
+        # {
+        #     "key": "rg_query_6k",
+        #     "name": "Ramat Gan - Up To 6K",
+        #     "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=5000&maxPrice=6000&minRooms=2&maxRooms=3&property=1&balcony=1&multiNeighborhood=1462&multiCity=8600,6300"
+        # },
+        # {
+        #     "key": "rg_query_5k",
+        #     "name": "Ramat Gan - Up To 5K",
+        #     "url": "https://gw.yad2.co.il/realestate-feed/rent/map?minPrice=4000&maxPrice=5000&minRooms=2&maxRooms=3&property=1&balcony=1&multiNeighborhood=1462&multiCity=8600,6300"
+        # },
         {
             "key": "rg_query_4k",
             "name": "Ramat Gan - Up To 4K",
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     update_portal(searches, False) # TODO: fix supa calls; sth off;
 
 
+
     # TODO: consider having at least launch args to fetch or dry run; as well, cron job on my gaming pc to sync;
     # TODO: consider if can do w Curl and not selenium to make this deployed
     # TODO: consider getting the descriptions;
-

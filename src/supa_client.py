@@ -12,6 +12,7 @@ from src.y2_ingest_svc import Apartment, IngestedApartament, EnhancedJSONEncoder
 class SupaState():
     id: str
     query_name: str
+    # created_at: str
     data: Apartment
 
 
