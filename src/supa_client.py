@@ -5,7 +5,7 @@ from typing import List, Union
 
 import requests
 
-from src.y2_ingest_svc import Apartment, IngestedApartament, EnhancedJSONEncoder
+from src.y2_ingest_svc import Apartment, IngestedApartment, EnhancedJSONEncoder
 
 
 @dataclass
@@ -74,15 +74,15 @@ class SupaClient:
             print(f"Error during DELETE request: {e}")
             return False
 
-    def ingest_values(self, apartments: List[IngestedApartament]):
+    def ingest_values(self, apartments: List[IngestedApartment]):
         print(f"Ingesting {len(apartments)}")
         api_url = f"{self.apts_url}"
         payload = [
             {
                 'id': apt.data.token,
                 'data': json.dumps(apt.data, cls=EnhancedJSONEncoder),
-                'query_name': apt.query_name,
-                'gui_score': apt.data.gui_score
+                'query_name': apt.queryName,
+                'gui_score': apt.data.guiScore
             }
         for apt in apartments]
 

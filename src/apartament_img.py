@@ -5,8 +5,8 @@ from src.y2_ingest_svc import Apartment
 
 class ApartamentImageDownloader:
     def download_all_images(self, apt: Apartment):
-        id = apt['token']
-        for idx, image in enumerate(apt['metadata']['images']):
+        id = apt.token
+        for idx, image in enumerate(apt.metadata['images']):
             self.download_image(f"{id} - {idx}", image) #padstart
 
     def download_image(self, image_name, image_url, save_directory="images"):

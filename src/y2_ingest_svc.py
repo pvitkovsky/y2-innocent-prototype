@@ -5,7 +5,7 @@ import os
 import re
 import time
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -24,6 +24,7 @@ class Metadata():
     images: List[str]
     squareMeterBuild: float
 
+
 @dataclass
 class Apartment():
     coords: Coords
@@ -34,15 +35,25 @@ class Apartment():
     roomsCount: int
     metadata: Metadata
 
+@dataclass()
+class ImageScore:
+    file: str
+    room_type: dict[str, float]
+    occupancy: dict[Union["empty", "full"], float] # TODO: fix typing
+
+@dataclass()
+class VectoredApartment(Apartment):
+    scoredImages: List[ImageScore]
+
 @dataclass
-class ScoredApartament(Apartment):
-    gui_score: float
+class ScoredApartment(VectoredApartment):
+    guiScore: float
 
 
 @dataclass
-class IngestedApartament():
-    data: ScoredApartament
-    query_name: str
+class IngestedApartment():
+    data: ScoredApartment
+    queryName: str
 
 class Y2IngestService:
     def __init__(self, source_json: str):
@@ -60,7 +71,7 @@ class Y2IngestService:
 
     def process(self, apt):
         try:
-                return Apartment(
+            return Apartment(
                 coords=Coords(apt['address']['coords']['lon'], apt['address']['coords']['lat']),
                 price=apt['price'],
                 token=apt['token'],
@@ -77,6 +88,7 @@ class Y2IngestService:
                 )
             )
         except Exception:
+            print("Exception parsing apartament!")
             return None
 
 class EnhancedJSONEncoder(json.JSONEncoder):
@@ -114,7 +126,8 @@ class Y2Fetcher():
         print(f"Latest JSON file: {latest_file}")
         return latest_file
 
-    def fetch_and_parse(self, name: str, url: str, fetch=True) -> List[Apartment]:
+
+    def fetch_and_parse_legacy(self, name: str, url: str, fetch=True) -> List[Apartment]: # TODO: should be reused by common code (?)
         if fetch:
             self.__save_raw_file__(name, url)
 
@@ -133,4 +146,28 @@ class Y2Fetcher():
         parsed = self.__get_latest_json__('parsed')
         with open(parsed, "r") as f:
             res: List[Apartment] = [Apartment(**apt) for apt in json.loads(f.read())]
+            return res
+
+
+    def fetch_and_parse(self, name: str, url: str, fetch=True) -> None:
+        if fetch:
+            self.__save_raw_file__(name, url)
+
+        source = self.__get_latest_json__(name)
+        with open(source, "r") as f:
+            data = f.read()
+            svc = Y2IngestService(data)
+            data = svc.transform_data()
+            print(json.dumps(data, cls=EnhancedJSONEncoder))
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"parsed_{name}_{timestamp}.json"
+            with open(filename, "w", encoding="utf-8") as f:
+                f.write(json.dumps(data, cls=EnhancedJSONEncoder))
+                print(f"Parsed JSON saved as: {filename}")
+
+
+    def load_vectorised(self, name: str) -> List[VectoredApartment]:
+        parsed = self.__get_latest_json__('parsed_vectorised')
+        with open(parsed, "r") as f:
+            res: List[VectoredApartment] = [VectoredApartment(**apt) for apt in json.loads(f.read())]
             return res
